@@ -1,2 +1,2 @@
 
-from pymeritrade.client import TDClient
+from pymeritrade.client import TDAClient
