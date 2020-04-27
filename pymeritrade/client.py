@@ -9,10 +9,12 @@ from pymeritrade.errors import TDAPermissionsError
 
 class TDAClient:
 
-    def __init__(self, consumer_key, open_browser=True, redirect_uri='http://localhost'):
+    def __init__(self, consumer_key, open_browser=True, redirect_uri='http://localhost', account_idx=0):
         self.consumer_key = consumer_key
         self.redirect_uri = redirect_uri
         self.open_browser = open_browser
+        self.account_idx = account_idx
+        self.account_id = None
         self.access_token = None
         self.refresh_token = None
         self.last_creds_fn = None
@@ -38,6 +40,8 @@ class TDAClient:
                 self.login(regen_on_failed_refresh=False)
             else:
                 raise TDAPermissionsError('Login failed')
+        else:
+            self._setup()
 
     def _manual_token_gen(self):
         auth_url = ('https://auth.tdameritrade.com/auth?' + 
@@ -79,6 +83,9 @@ class TDAClient:
     def _check_login(self):
         return 'error' not in self.principles
 
+    def _setup(self):
+        self.account_id = self.accounts[self.account_idx]['securitiesAccount']['accountId']
+
     def save_login(self, fn='tda-login'):
         self.last_creds_fn = fn
         with open(fn, 'w') as lf:
@@ -95,6 +102,30 @@ class TDAClient:
     @property
     def principles(self):
         return self._call_api('userprincipals', params=dict(fields='streamerSubscriptionKeys,streamerConnectionInfo'))
+
+    @property
+    def accounts(self):
+        return self._call_api('accounts')
+
+    @property
+    def account(self):
+        return self._call_api('accounts/{}'.format(self.account_id))['securitiesAccount']
+
+    @property
+    def equity(self):
+        return self.account['currentBalances']['equity']
+
+    @property
+    def day_trades(self):
+        return self.account['roundTrips']
+
+    @property
+    def buying_power(self):
+        return self.account['currentBalances']['buyingPower']
+
+    @property
+    def liquidation_value(self):
+        return self.account['currentBalances']['liquidationValue']
 
     def create_stream(self, **kwargs):
         return TDAStream(self, **kwargs)
