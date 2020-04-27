@@ -7,18 +7,30 @@ import queue
 import time
 import json
 
-from pymeritrade.error import TDAPermissionsError, check_assert
+from pymeritrade.errors import TDAPermissionsError, check_assert
+
+
+SUB_TYPES = {
+    'news': ('NEWS_HEADLINE', 'SUBS', 'NEWS_HEADLINE-SUBS', [0, 3, 4, 5, 8], {}),
+    'newslist': ('NEWS_HEADLINELIST', 'SUBS', 'NEWS_HEADLINELIST-SUBS', [0, 1], {}),
+    'forex': ('LEVELONE_FOREX', 'SUBS', 'LEVELONE_FOREX-SUBS', [0, 1, 2, 3, 4, 5, 6], {}),
+    'quote': ('QUOTE', 'SUBS', 'QUOTE-SUBS', [0, 1, 2, 3, 8], {}),
+    'chart': ('CHART_type', 'SUBS', 'CHART_type-SUBS', [0, 1, 2, 3, 4, 5, 6, 7, 8], 
+        {'type': {'equity': 'EQUITY', 'futures': 'FUTURES', 'options': 'OPTIONS'}}),
+    'actives': ('ACTIVES_exchange', 'SUBS', 'ACTIVES_exchange-SUBS', [0, 1], 
+        {'exchange': {'NASDAQ': 'NASDAQ', 'NYSE': 'NYSE', 'OPTIONS': 'OPTIONS', 'OTCBB': 'OTCBB'}}),
+}
 
 
 class TDAStream:
 
-    def __init__(self, client, verbose=False):
+    def __init__(self, client, debug=False):
         self.principles = client.principles
         self.ws_uri = 'wss://' + self.principles['streamerInfo']['streamerSocketUrl'] + '/ws'
         self.token_ts = _iso_to_ms(self.principles['streamerInfo']['tokenTimestamp'])
         self.acc_id = self.principles['accounts'][0]['accountId']
         self.app_id = self.principles['streamerInfo']['appId']
-        self.verbose = verbose
+        self.debug = debug
 
         self.cmd_buffer = []
         self.req_id_cnt = 0
@@ -26,10 +38,10 @@ class TDAStream:
         self.ws_started = False
         self.ws_ready = False
         self.thread = None
-        self.data_qs = defaultdict(queue.Queue)
+        self.data_qs = defaultdict(lambda: None)
 
     def _log(self, *args):
-        if self.verbose:
+        if self.debug:
             print(*args)
 
     def _cmd(self, service, command, params={}, id_=None, send=True):
@@ -102,10 +114,14 @@ class TDAStream:
         self._log('NOTIFY', info)
 
     def _on_data(self, data):
-        self._log('DATA', data)
         key = _msg_to_key(data)
-        self.data_qs[key].put(data['content'])
-        self.data_qs['*'].put(data['content'])
+        self._log('DATA', key, data)
+        data_q = self.data_qs[key]
+        all_data_q = self.data_qs['*']
+        if data_q is not None:
+            data_q.put(data['content'])
+        if all_data_q is not None:
+            all_data_q.put(data['content'])
 
     def start(self):
         ws = websocket.WebSocketApp(self.ws_uri, 
@@ -121,29 +137,28 @@ class TDAStream:
 
     def subscribe(self, name, **params):
         check_assert(self.ws_ready, 'Websocket not ready')
-        if name == 'news':
-            check_assert(len(params['symbols']) > 0, 'At least one symbol needed.')
-            self._cmd('NEWS_HEADLINES', 'SUBS', {'keys': params['symbols'], 'fields': params.get('fields', [0, 3, 4, 5, 8])})
-            return self._make_queue_iter('news', 'NEWS_HEADLINES-SUBS')
-        elif name == 'forex':
-            check_assert(len(params['symbols']) > 0, 'At least one symbol needed.')
-            self._cmd('LEVELONE_FOREX', 'SUBS', {'keys': params['symbols'], 'fields': params.get('fields', [0, 1, 2, 3, 4, 5, 6])})
-            return self._make_queue_iter('forex', 'LEVELONE_FOREX-SUBS')
-        elif name == 'quote':
-            check_assert(len(params['symbols']) > 0, 'At least one symbol needed.')
-            self._cmd('QUOTE', 'SUBS', {'keys': params['symbols'], 'fields': params.get('fields', [0, 1, 2, 3, 8])})
-            return self._make_queue_iter('quote', 'QUOTE-SUBS')
-        else:
-            check_assert(False, 'Unknown subscription type')
+        check_assert(name in SUB_TYPES)
+        check_assert(len(params['symbols']) > 0, 'At least one symbol needed.')
+        service, cmd, id_, fields, mods = SUB_TYPES[name]
+        for mod, translation in mods.items():
+            selected = translation.get(params.get(mod))
+            check_assert(selected is not None, mod + ' not provided')
+            service = service.replace(mod, selected)
+            id_ = id_.replace(mod, selected)
+        self._cmd(service, cmd, {'keys': params.get('symbols', ''), 'fields': params.get('fields', fields)})
+        return self._make_queue_iter('news', id_)
 
     def live_data(self):
         return self._make_queue_iter('*', '*')()
 
     def _make_queue_iter(self, clean_name, name):
-        queue = self.data_qs[name]
+        data_q = self.data_qs[name]
+        if data_q is None:
+            data_q = queue.Queue()
+            self.data_qs[name] = data_q
         def data_iter():
             while True:
-                items = queue.get(block=True)
+                items = data_q.get(block=True)
                 item_dict = {val['key']: val for val in items}
                 yield clean_name, item_dict
         return data_iter

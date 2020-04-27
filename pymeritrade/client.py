@@ -4,14 +4,15 @@ import requests
 import json
 
 from pymeritrade.stream import TDAStream
-from pymeritrade.error import TDAPermissionsError
+from pymeritrade.errors import TDAPermissionsError
 
 
 class TDAClient:
 
-    def __init__(self, consumer_key, redirect_uri='http://localhost'):
+    def __init__(self, consumer_key, open_browser=True, redirect_uri='http://localhost'):
         self.consumer_key = consumer_key
         self.redirect_uri = redirect_uri
+        self.open_browser = open_browser
         self.access_token = None
         self.refresh_token = None
         self.last_creds_fn = None
@@ -24,20 +25,28 @@ class TDAClient:
         resp = requests.get('https://api.tdameritrade.com/v1/' + path, **kwargs)
         return resp.json()
 
-    def login(self):
+    def login(self, regen_on_failed_refresh=True):
         if self.access_token is None:
             print('Generating access token...')
             self._manual_token_gen()
         if not self._check_login():
             self._refresh_token()
         if not self._check_login():
-            raise TDAPermissionsError('Login failed')
+            if regen_on_failed_refresh:
+                self.access_token = None
+                self.refresh_token = None
+                self.login(regen_on_failed_refresh=False)
+            else:
+                raise TDAPermissionsError('Login failed')
 
     def _manual_token_gen(self):
         auth_url = ('https://auth.tdameritrade.com/auth?' + 
             'response_type=code&redirect_uri={}&client_id={}@AMER.OAUTHAP'.format(self.redirect_uri, self.consumer_key))
         print('Go to the link below, login, then copy the code from the url.')
         print(auth_url)
+        if self.open_browser:
+            import webbrowser
+            webbrowser.open(auth_url)
         code = unquote_plus(input('code > '))
         resp = self._call_oauth(dict(
             grant_type='authorization_code', 
