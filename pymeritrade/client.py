@@ -31,9 +31,7 @@ class TDAClient:
         if self.access_token is None:
             print('Generating access token...')
             self._manual_token_gen()
-        if not self._check_login():
-            self._refresh_token()
-        if not self._check_login():
+        if not self._check_login() and not self._refresh_token():
             if regen_on_failed_refresh:
                 self.access_token = None
                 self.refresh_token = None
@@ -72,9 +70,10 @@ class TDAClient:
             client_id=self.consumer_key + '@AMER.OAUTHAP', 
             refresh_token=self.refresh_token
         ))
-        self.access_token = resp['access_token']
-        if self.last_creds_fn is not None:
-            self.save_login(fn=self.last_creds_fn)
+        if 'access_token' in self.access_token:
+            self.access_token = resp['access_token']
+            return True
+        return False
 
     def _call_oauth(self, params):
         resp = requests.post('https://api.tdameritrade.com/v1/oauth2/token', data=params).json()
@@ -85,6 +84,8 @@ class TDAClient:
 
     def _setup(self):
         self.account_id = self.accounts[self.account_idx]['securitiesAccount']['accountId']
+        if self.last_creds_fn is not None:
+            self.save_login(fn=self.last_creds_fn)
 
     def save_login(self, fn='tda-login'):
         self.last_creds_fn = fn

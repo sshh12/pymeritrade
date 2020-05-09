@@ -139,13 +139,13 @@ class TDAStream:
         check_assert(self.ws_ready, 'Websocket not ready')
         check_assert(name in SUB_TYPES)
         check_assert(len(params['symbols']) > 0, 'At least one symbol needed.')
-        service, cmd, id_, fields, mods = SUB_TYPES[name]
+        service, cmd, id_, default_fields, mods = SUB_TYPES[name]
         for mod, translation in mods.items():
             selected = translation.get(params.get(mod))
             check_assert(selected is not None, mod + ' not provided')
             service = service.replace(mod, selected)
             id_ = id_.replace(mod, selected)
-        self._cmd(service, cmd, {'keys': params.get('symbols', ''), 'fields': params.get('fields', fields)})
+        self._cmd(service, cmd, {'keys': params.get('symbols', ''), 'fields': params.get('fields', default_fields)})
         return self._make_queue_iter('news', id_)
 
     def live_data(self):

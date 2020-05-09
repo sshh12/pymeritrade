@@ -3,7 +3,7 @@
 > A python interface for using the TD Ameritrade API.
 
 ```shell
-pip install git+https://github.com/sshh12/pymeritrade
+$ pip install git+https://github.com/sshh12/pymeritrade
 ```
 
 ## Usage
