@@ -1,9 +1,9 @@
 from urllib.parse import unquote_plus
-import websocket
 import requests
 import json
 
 from pymeritrade.stream import TDAStream
+from pymeritrade.history import TDAHistory
 from pymeritrade.errors import TDAPermissionsError
 
 
@@ -70,10 +70,11 @@ class TDAClient:
             client_id=self.consumer_key + '@AMER.OAUTHAP', 
             refresh_token=self.refresh_token
         ))
-        if 'access_token' in self.access_token:
-            self.access_token = resp['access_token']
-            return True
-        return False
+        if 'access_token' not in self.access_token:
+            print(resp)
+            return False
+        self.access_token = resp['access_token']
+        return True
 
     def _call_oauth(self, params):
         resp = requests.post('https://api.tdameritrade.com/v1/oauth2/token', data=params).json()
@@ -130,3 +131,6 @@ class TDAClient:
 
     def create_stream(self, **kwargs):
         return TDAStream(self, **kwargs)
+
+    def history(self, **kwargs):
+        return TDAHistory(self, **kwargs)

@@ -7,6 +7,10 @@ class TDAPermissionsError(TDAError):
    pass
 
 
+class TDAAPIError(TDAError):
+   pass
+
+
 class TDUsageError(TDAError):
    pass
 

@@ -20,6 +20,7 @@ SUB_TYPES = {
     'actives': ('ACTIVES_exchange', 'SUBS', 'ACTIVES_exchange-SUBS', [0, 1], 
         {'exchange': {'NASDAQ': 'NASDAQ', 'NYSE': 'NYSE', 'OPTIONS': 'OPTIONS', 'OTCBB': 'OTCBB'}}),
 }
+SUB_ID_TO_NAME = {val[2]: key for key, val in SUB_TYPES.items()}
 
 
 class TDAStream:
@@ -115,13 +116,13 @@ class TDAStream:
 
     def _on_data(self, data):
         key = _msg_to_key(data)
+        name = SUB_ID_TO_NAME[key]
         self._log('DATA', key, data)
-        data_q = self.data_qs[key]
-        all_data_q = self.data_qs['*']
-        if data_q is not None:
-            data_q.put(data['content'])
-        if all_data_q is not None:
-            all_data_q.put(data['content'])
+        def _append_data(q):
+            if q is not None:
+                q.put((name, data['content']))
+        _append_data(self.data_qs[key])
+        _append_data(self.data_qs['*'])
 
     def start(self):
         ws = websocket.WebSocketApp(self.ws_uri, 
