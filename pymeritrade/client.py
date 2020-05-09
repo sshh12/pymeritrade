@@ -70,8 +70,7 @@ class TDAClient:
             client_id=self.consumer_key + '@AMER.OAUTHAP', 
             refresh_token=self.refresh_token
         ))
-        if 'access_token' not in self.access_token:
-            print(resp)
+        if 'access_token' not in resp:
             return False
         self.access_token = resp['access_token']
         return True
