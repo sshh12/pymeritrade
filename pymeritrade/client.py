@@ -4,6 +4,7 @@ import json
 
 from pymeritrade.stream import TDAStream
 from pymeritrade.history import TDAHistory
+from pymeritrade.options import TDAOptions
 from pymeritrade.errors import TDAPermissionsError
 
 
@@ -133,3 +134,6 @@ class TDAClient:
 
     def history(self, **kwargs):
         return TDAHistory(self, **kwargs)
+
+    def options(self, **kwargs):
+        return TDAOptions(self, **kwargs)

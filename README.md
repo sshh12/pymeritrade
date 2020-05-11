@@ -15,14 +15,15 @@ api_key = 'FANISDI42KS53AD...'
 
 tda = TDAClient(api_key)
 # first time login
- tda.login()
- tda.save_login()
+tda.login()
+tda.save_login()
 # normal login
- tda.load_login()
+tda.load_login()
 
 print(tda.account)
 print(tda.day_trades)
 print(tda.liquidation_value)
+print(tda.options(quotes=True)['AAPL'])
 ```
 
 ```python
