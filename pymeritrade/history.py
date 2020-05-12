@@ -1,12 +1,14 @@
 import pandas as pd
 
 from pymeritrade.errors import TDAAPIError
+from pymeritrade.utils import parse_date_cols
 
 
 class TDAHistory:
 
     def __init__(self, client, **kwargs):
         self.client = client
+        self.parse_dates = kwargs.get('parse_dates', True)
         self.span = kwargs.get('span', 'year')
         self.freq = kwargs.get('freq', 'daily')
         self.extended = kwargs.get('extended', True)
@@ -27,7 +29,8 @@ class TDAHistory:
         if 'candles' not in resp:
             raise TDAAPIError(resp['error'])
         df = pd.DataFrame(resp['candles'])
-        df['datetime'] = pd.to_datetime(df['datetime'] * 1000 * 1000)
+        if self.parse_dates:
+            df = parse_date_cols(df, ['datetime'])
         df = df.set_index('datetime')
         return df
 

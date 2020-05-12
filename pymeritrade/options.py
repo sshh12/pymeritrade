@@ -1,6 +1,7 @@
 import pandas as pd
 
 from pymeritrade.errors import TDAAPIError
+from pymeritrade.utils import parse_date_cols
 
 
 JSON_COL_NAMES = {
@@ -12,7 +13,7 @@ JSON_COL_NAMES = {
     'closePrice': 'close',
     'strikePrice': 'strike',
     'totalVolume': 'volume',
-    'inTheMoney': 'ITM',
+    'inTheMoney': 'itm',
     'bidSize': 'bid_size',
     'askSize': 'ask_size',
     'timeValue': 'time_value',
@@ -26,7 +27,8 @@ JSON_COL_NAMES = {
     'expirationDate': 'exp_date',
     'tradeDate': 'trade_date',
     'theoreticalOptionValue': 'theoretical_value',
-    'theoreticalVolatility': 'theoretical_volatility'
+    'theoreticalVolatility': 'theoretical_volatility',
+    'expirationType': 'exp_type'
 }
 
 
@@ -34,6 +36,7 @@ class TDAOptions:
 
     def __init__(self, client, **kwargs):
         self.client = client
+        self.parse_dates = kwargs.get('parse_dates', True)
         self.range = kwargs.get('range')
         self.contracts = kwargs.get('contracts', 'all')
         self.quotes = kwargs.get('quotes', True)
@@ -63,8 +66,8 @@ class TDAOptions:
         df = df.rename(columns=JSON_COL_NAMES)
         df['symbol'] = symbol
         df['interest_rate'] = resp['interestRate']
-        for date_key in ['exp_date', 'trade_time', 'quote_time', 'last_trade_date']:
-            df[date_key] = pd.to_datetime(df[date_key] * 1000 * 1000)
+        if self.parse_dates:
+            df = parse_date_cols(df, ['exp_date', 'trade_time', 'quote_time', 'last_trade_date'])
         df['overall_volatility'] = resp['volatility']
         df['overall_strategy'] = resp['strategy']
         df['vol_by_oi'] = df['volume'] / df['open_interest']

@@ -23,6 +23,7 @@ tda.load_login()
 print(tda.account)
 print(tda.day_trades)
 print(tda.liquidation_value)
+print(tda.movers('$DJI'))
 print(tda.options(quotes=True)['AAPL'])
 ```
 

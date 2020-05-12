@@ -132,6 +132,12 @@ class TDAClient:
     def create_stream(self, **kwargs):
         return TDAStream(self, **kwargs)
 
+    def movers(self, index='$DJI', direction=None):
+        params = {}
+        if direction:
+            params['direction'] = direction.lower()
+        return self._call_api('marketdata/{}/movers'.format(index), params=params)
+
     def history(self, **kwargs):
         return TDAHistory(self, **kwargs)
 
