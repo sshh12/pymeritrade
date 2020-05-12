@@ -5,6 +5,7 @@ import json
 from pymeritrade.stream import TDAStream
 from pymeritrade.history import TDAHistory
 from pymeritrade.options import TDAOptions
+from pymeritrade.quotes import TDAQuotes
 from pymeritrade.errors import TDAPermissionsError
 
 
@@ -143,3 +144,6 @@ class TDAClient:
 
     def options(self, **kwargs):
         return TDAOptions(self, **kwargs)
+
+    def quotes(self, **kwargs):
+        return TDAQuotes(self, **kwargs)

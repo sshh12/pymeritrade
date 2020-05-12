@@ -1,3 +1,4 @@
+from datetime import datetime
 import pandas as pd
 
 from pymeritrade.errors import TDAAPIError
@@ -9,6 +10,11 @@ class TDAHistory:
     def __init__(self, client, **kwargs):
         self.client = client
         self.parse_dates = kwargs.get('parse_dates', True)
+        if kwargs.get('span') == 'all':
+            kwargs['span'] = 'year'
+            kwargs['start'] = datetime(1970, 1, 2)
+        if kwargs.get('latest'):
+            kwargs['end'] = datetime.now()
         self.span = kwargs.get('span', 'year')
         self.freq = kwargs.get('freq', 'daily')
         self.extended = kwargs.get('extended', True)
@@ -21,10 +27,10 @@ class TDAHistory:
             frequencyType=self.freq,
             needExtendedHoursData=str(self.extended).lower()
         )
-        if self.start:
+        if self.start is not None:
             params['startDate'] = _date_to_ms(self.start)
-        if self.end:
-            params['endDate'] = _date_to_ms(self.start)
+        if self.end is not None:
+            params['endDate'] = _date_to_ms(self.end)
         resp = self.client._call_api('marketdata/{}/pricehistory'.format(symbol), params=params)
         if 'candles' not in resp:
             raise TDAAPIError(resp['error'])

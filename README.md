@@ -25,6 +25,7 @@ print(tda.day_trades)
 print(tda.liquidation_value)
 print(tda.movers('$DJI'))
 print(tda.options(quotes=True)['AAPL'])
+print(tda.quotes()[['AMZN', 'INO']])
 ```
 
 ```python
@@ -42,12 +43,13 @@ for item in stream.live_data():
 
 ```python
 # Create a history factory (symbol(s) -> Pandas DataFrame)
-# spans {day, month, year, ytd}
+# spans {day, month, year, ytd, all}
 # freqs {minute, daily, weekly, monthly}
 daily_history       = tda.history(span='year', freq='daily')
 daily_history_no_ah = tda.history(span='year', freq='daily', extended=False)
 old_history         = tda.history(span='year', freq='daily', start=datetime(2000, 1, 1))
 high_res_history    = tda.history(span='day', freq='minute')
+all_time_to_rt_now  = tda.history(span='all', freq='daily', latest=True)
 
 # Get single symbol history
 daily_history['AAPL']
