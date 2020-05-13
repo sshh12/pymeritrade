@@ -71,6 +71,10 @@ daily_history[['AAPL', 'INTC']]
 # 2020-05-08 05:00:00    305.640     310.35  304.2900      310.13  ...    59.7800     59.05       59.67     20391091
 ```
 
+```python
+print(tda.orders.all())
+```
+
 ## Alternative Python Libs
 
 [@areed1192/td-ameritrade-python-api](https://github.com/areed1192/td-ameritrade-python-api)

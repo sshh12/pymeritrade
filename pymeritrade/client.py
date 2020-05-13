@@ -6,6 +6,7 @@ from pymeritrade.stream import TDAStream
 from pymeritrade.history import TDAHistory
 from pymeritrade.options import TDAOptions
 from pymeritrade.quotes import TDAQuotes
+from pymeritrade.orders import TDAOrder, TDAOrders
 from pymeritrade.errors import TDAPermissionsError
 
 
@@ -130,6 +131,10 @@ class TDAClient:
     def liquidation_value(self):
         return self.account['currentBalances']['liquidationValue']
 
+    @property
+    def orders(self):
+        return TDAOrders(self)
+
     def create_stream(self, **kwargs):
         return TDAStream(self, **kwargs)
 
@@ -138,6 +143,9 @@ class TDAClient:
         if direction:
             params['direction'] = direction.lower()
         return self._call_api('marketdata/{}/movers'.format(index), params=params)
+
+    def order(self, **kwargs):
+        return TDAOrder.from_new(self, **kwargs)
 
     def history(self, **kwargs):
         return TDAHistory(self, **kwargs)
