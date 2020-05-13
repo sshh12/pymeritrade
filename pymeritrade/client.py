@@ -7,6 +7,7 @@ from pymeritrade.history import TDAHistory
 from pymeritrade.options import TDAOptions
 from pymeritrade.quotes import TDAQuotes
 from pymeritrade.orders import TDAOrder, TDAOrders
+from pymeritrade.instruments import TDAInstruments
 from pymeritrade.errors import TDAPermissionsError
 
 
@@ -134,6 +135,14 @@ class TDAClient:
     @property
     def orders(self):
         return TDAOrders(self)
+
+    @property
+    def instruments(self):
+        return TDAInstruments(self)
+
+    @property
+    def stocks(self):
+        return self.instruments
 
     def create_stream(self, **kwargs):
         return TDAStream(self, **kwargs)

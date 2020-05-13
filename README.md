@@ -75,6 +75,10 @@ daily_history[['AAPL', 'INTC']]
 print(tda.orders.all())
 ```
 
+```python
+print(tda.stocks['AAPL'])
+```
+
 ## Alternative Python Libs
 
 [@areed1192/td-ameritrade-python-api](https://github.com/areed1192/td-ameritrade-python-api)

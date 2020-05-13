@@ -3,7 +3,7 @@ from datetime import datetime
 from pymeritrade.errors import TDAAPIError
 
 
-JSON_KEYS = {
+JSON_KEY_MAP = {
     'session': 'session',
     'duration': 'duration',
     'orderType': 'order_type',
@@ -35,7 +35,7 @@ class TDAOrder:
     @staticmethod
     def from_json(client, json_data):
         kwargs = {}
-        for json_key, kwarg in JSON_KEYS.items():
+        for json_key, kwarg in JSON_KEY_MAP.items():
             kwargs[kwarg] = json_data[json_key]
         return TDAOrder(client, json_data['orderId'], json_data, **kwargs)
 
