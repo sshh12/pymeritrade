@@ -29,6 +29,14 @@ print(tda.quotes()[['AMZN', 'INO']])
 ```
 
 ```python
+AAPL = tda.stocks['AAPL']
+print(AAPL.quote)
+print(AAPL.fundamentals)
+print(AAPL.history(span='day', freq='minute'))
+print(AAPL.options())
+```
+
+```python
 stream = tda.create_stream(debug=True)
 stream.start()
 
@@ -75,11 +83,8 @@ daily_history[['AAPL', 'INTC']]
 print(tda.orders.all())
 ```
 
-```python
-print(tda.stocks['AAPL'])
-```
-
 ## Alternative Python Libs
 
 [@areed1192/td-ameritrade-python-api](https://github.com/areed1192/td-ameritrade-python-api)
+
 [@timkpaine/tdameritrade](https://github.com/timkpaine/tdameritrade)

@@ -12,5 +12,5 @@ class TDAQuotes:
 
     def __getitem__(self, key):
         if type(key) == str:
-            return self._call_api([key])
+            return self._call_api([key])[key]
         return self._call_api(key)

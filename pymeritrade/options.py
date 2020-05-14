@@ -4,7 +4,7 @@ from pymeritrade.errors import TDAAPIError
 from pymeritrade.utils import parse_date_cols
 
 
-JSON_COL_NAMES = {
+JSON_KEY_MAP = {
     'symbol': 'option_symbol',
     'putCall': 'contract',
     'highPrice': 'high',
@@ -28,7 +28,8 @@ JSON_COL_NAMES = {
     'tradeDate': 'trade_date',
     'theoreticalOptionValue': 'theoretical_value',
     'theoreticalVolatility': 'theoretical_volatility',
-    'expirationType': 'exp_type'
+    'expirationType': 'exp_type',
+    'exchangeName': 'exchange'
 }
 
 
@@ -63,7 +64,7 @@ class TDAOptions:
                 for strike, options in strikes.items():
                     options_all.extend(options)
         df = pd.DataFrame(options_all)
-        df = df.rename(columns=JSON_COL_NAMES)
+        df = df.rename(columns=JSON_KEY_MAP)
         df['symbol'] = symbol
         df['interest_rate'] = resp['interestRate']
         if self.parse_dates:

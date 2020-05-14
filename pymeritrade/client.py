@@ -29,7 +29,10 @@ class TDAClient:
         if params is not None:
             kwargs['params'] = params
         resp = requests.get('https://api.tdameritrade.com/v1/' + path, **kwargs)
-        return resp.json()
+        try:
+            return resp.json()
+        except json.decoder.JSONDecodeError:
+            return {'error': 'parse error', 'content': resp.text}
 
     def login(self, regen_on_failed_refresh=True):
         if self.access_token is None:
