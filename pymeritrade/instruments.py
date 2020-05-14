@@ -3,8 +3,6 @@ from pymeritrade.errors import TDAAPIError
 
 class TDAInstrument:
 
-    CACHE = {}
-
     def __init__(self, client, symbol, cusip, asset_type, exchange, desc=""):
         self.client = client
         self.symbol = symbol
@@ -16,8 +14,6 @@ class TDAInstrument:
     @staticmethod
     def from_json(client, json_data):
         symbol = json_data['symbol']
-        if symbol in TDAInstrument.CACHE:
-            return TDAInstrument.CACHE[symbol]
         return TDAInstrument(client, symbol, 
             json_data['cusip'], json_data['assetType'], 
             json_data['exchange'], desc=json_data['description'])
@@ -42,6 +38,8 @@ class TDAInstrument:
 
 class TDAInstruments:
 
+    CACHE = {}
+
     def __init__(self, client):
         self.client = client
 
@@ -56,6 +54,8 @@ class TDAInstruments:
         return self._call_api(query, 'fundamental')[query]['fundamental']
 
     def __getitem__(self, key):
+        if key in TDAInstruments.CACHE:
+            return TDAInstruments.CACHE[key]
         data = self._call_api(key, 'symbol-search')
         if key in data:
             return TDAInstrument.from_json(self.client, data[key])

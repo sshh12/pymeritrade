@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from pymeritrade.errors import TDAAPIError
-
 
 JSON_KEY_MAP = {
     'session': 'session',
@@ -27,16 +25,22 @@ class TDAOrder:
         self.client = client
         self._id = _id
         self.raw_json = raw_json
+        self.session = kwargs.get('session', 'normal')
+        self.duration = kwargs.get('duration', 'day')
+        self.order_type = kwargs.get('order_type', 'market')
+        self.complex_strat_type = kwargs.get('complex_strat_type', 'none')
 
     @staticmethod
     def from_new(client, **kwargs):
-        return TDAOrder(client, None, None)
+        return TDAOrder(client, None, {}, **kwargs)
     
     @staticmethod
     def from_json(client, json_data):
         kwargs = {}
         for json_key, kwarg in JSON_KEY_MAP.items():
-            kwargs[kwarg] = json_data[json_key]
+            val = json_data.get(json_key)
+            if val is not None:
+                kwargs[kwarg] = val
         return TDAOrder(client, json_data['orderId'], json_data, **kwargs)
 
     def _post_order(self, symbols):
@@ -47,8 +51,12 @@ class TDAOrder:
         return resp
 
     def exec(self):
-        # TODO
-        assert False
+        params = {
+            'session': self.session,
+            'duration': self.duration,
+            'orderType': self.order_type
+        }
+        print(params)
 
 
 class TDAOrders:
