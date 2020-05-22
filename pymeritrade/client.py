@@ -99,13 +99,13 @@ class TDAClient:
         with open(fn, 'w') as lf:
             json.dump(dict(access_token=self.access_token, refresh_token=self.refresh_token), lf)
 
-    def load_login(self, fn='tda-login'):
+    def load_login(self, fn='tda-login', **kwargs):
         self.last_creds_fn = fn
         with open(fn, 'r') as lf:
             creds = json.load(lf)
         self.access_token = creds['access_token']
         self.refresh_token = creds['refresh_token']
-        self.login()
+        self.login(**kwargs)
 
     @property
     def principles(self):

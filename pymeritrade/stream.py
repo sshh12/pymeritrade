@@ -159,9 +159,9 @@ class TDAStream:
             self.data_qs[name] = data_q
         def data_iter():
             while True:
-                items = data_q.get(block=True)
+                type_name, items = data_q.get(block=True)
                 item_dict = {val['key']: val for val in items}
-                yield clean_name, item_dict
+                yield type_name, item_dict
         return data_iter
 
     def logout(self):
