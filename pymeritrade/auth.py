@@ -80,14 +80,14 @@ class SeleniumHandler(DefaultAuthHandler):
         password = input("Password > ")
         return username, password
 
-    def set_driver(self):
-        self.driver = webdriver.Chrome()
+    def get_driver(self):
+        return webdriver.Chrome()
 
     def wait_a_little(self):
         time.sleep(2)
 
     def get_code_from_auth_url(self, auth_url):
-        self.set_driver()
+        self.driver = self.get_driver()
         self.driver.get(auth_url)
         username, password = self.get_login_creds()
         self._type_field("username", username)
@@ -103,6 +103,7 @@ class SeleniumHandler(DefaultAuthHandler):
         self._accept()
         self.wait_a_little()
         code = unquote_plus(self.driver.current_url.split("?code=")[1])
+        self.driver.quit()
         return code
 
     def _type_field(self, elem_id, text):
@@ -118,8 +119,8 @@ class SeleniumHandler(DefaultAuthHandler):
 
 
 class SeleniumHeadlessHandler(SeleniumHandler):
-    def set_driver(self):
+    def get_driver(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1920x1080")
-        self.driver = webdriver.Chrome(chrome_options=chrome_options)
+        return webdriver.Chrome(chrome_options=chrome_options)
