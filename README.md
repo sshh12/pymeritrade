@@ -3,7 +3,7 @@
 > A python interface for using the TD Ameritrade API.
 
 ```shell
-$ pip install git+https://github.com/sshh12/pymeritrade
+$ pip install git+https://github.com/sshh12/pymeritrade.git --upgrade
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ from pymeritrade import TDAClient
 api_key = 'FANISDI42KS53AD...'
 
 tda = TDAClient(api_key)
-# first time login
+# first time login (see `auth.py` for more adv auth methods)
 tda.login()
 tda.save_login()
 # normal login

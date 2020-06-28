@@ -1,20 +1,19 @@
-
 class TDAError(Exception):
-   pass
+    pass
 
 
 class TDAPermissionsError(TDAError):
-   pass
+    pass
 
 
 class TDAAPIError(TDAError):
-   pass
+    pass
 
 
 class TDUsageError(TDAError):
-   pass
+    pass
 
 
-def check_assert(val, msg=''):
+def check_assert(val, msg=""):
     if not val:
         raise TDUsageError(msg)
