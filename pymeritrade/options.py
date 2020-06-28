@@ -1,36 +1,7 @@
 import pandas as pd
 
 from pymeritrade.errors import TDAAPIError
-from pymeritrade.utils import parse_date_cols
-
-
-JSON_KEY_MAP = {
-    "symbol": "option_symbol",
-    "putCall": "contract",
-    "highPrice": "high",
-    "lowPrice": "low",
-    "openPrice": "open",
-    "closePrice": "close",
-    "strikePrice": "strike",
-    "totalVolume": "volume",
-    "inTheMoney": "itm",
-    "bidSize": "bid_size",
-    "askSize": "ask_size",
-    "timeValue": "time_value",
-    "daysToExpiration": "days_to_exp",
-    "nonStandard": "nonstandard",
-    "bidAskSize": "bid_ask_size",
-    "openInterest": "open_interest",
-    "tradeTimeInLong": "trade_time",
-    "quoteTimeInLong": "quote_time",
-    "lastTradingDay": "last_trade_date",
-    "expirationDate": "exp_date",
-    "tradeDate": "trade_date",
-    "theoreticalOptionValue": "theoretical_value",
-    "theoreticalVolatility": "theoretical_volatility",
-    "expirationType": "exp_type",
-    "exchangeName": "exchange",
-}
+from pymeritrade.utils import *
 
 
 class TDAOptions:
@@ -44,7 +15,7 @@ class TDAOptions:
         self.strike = kwargs.get("strike")
         self.exp_month = kwargs.get("exp_month", "all")
 
-    def _call_api(self, symbol):
+    def _query_options(self, symbol):
         params = dict(
             symbol=symbol,
             contractType=self.contracts.upper(),
@@ -63,16 +34,16 @@ class TDAOptions:
                 for strike, options in strikes.items():
                     options_all.extend(options)
         df = pd.DataFrame(options_all)
-        df = df.rename(columns=JSON_KEY_MAP)
-        df["symbol"] = symbol
+        df = clean_col_names(df)
+        df["stock_symbol"] = symbol
         df["interest_rate"] = resp["interestRate"]
-        if self.parse_dates:
-            df = parse_date_cols(df, ["exp_date", "trade_time", "quote_time", "last_trade_date"])
         df["overall_volatility"] = resp["volatility"]
         df["overall_strategy"] = resp["strategy"]
-        df["vol_by_oi"] = df["volume"] / df["open_interest"]
-        df = df.set_index("option_symbol")
+        df["vol_by_oi"] = df["total_volume"] / df["open_interest"]
+        if self.parse_dates:
+            df = parse_date_cols(df, ["expiration_date", "trade_time", "quote_time", "last_trading_day"])
+        df = df.set_index("symbol")
         return df
 
     def __getitem__(self, key):
-        return self._call_api(key)
+        return self._query_options(key)

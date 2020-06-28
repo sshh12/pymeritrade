@@ -19,6 +19,9 @@ class TDAOrder:
     def from_json(client, json_data):
         return TDAOrder(client, json_data)
 
+    def __repr__(self):
+        return f"<Order ({self.id})>"
+
     def _post_order(self, symbols):
         resp = self.client._call_api("accounts/{}/orders".format(self.client.account_id), method="POST")
         return resp

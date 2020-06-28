@@ -83,6 +83,9 @@ class SeleniumHandler(DefaultAuthHandler):
     def set_driver(self):
         self.driver = webdriver.Chrome()
 
+    def wait_a_little(self):
+        time.sleep(2)
+
     def get_code_from_auth_url(self, auth_url):
         self.set_driver()
         self.driver.get(auth_url)
@@ -90,15 +93,15 @@ class SeleniumHandler(DefaultAuthHandler):
         self._type_field("username", username)
         self._type_field("password", password)
         self._accept()
-        time.sleep(2)
+        self.wait_a_little()
         phone_xpath = '//label[@for="smsnumber_{}"]'.format(self.get_phone_idx())
         self.driver.find_element(By.XPATH, phone_xpath).click()
         self._accept()
         self._type_field("smscode", self.get_sms_code())
         self._accept()
-        time.sleep(2)
+        self.wait_a_little()
         self._accept()
-        time.sleep(2)
+        self.wait_a_little()
         code = unquote_plus(self.driver.current_url.split("?code=")[1])
         return code
 

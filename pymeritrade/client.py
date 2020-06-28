@@ -1,7 +1,7 @@
 import requests
 import json
 
-from pymeritrade.stream import TDAStream
+from pymeritrade.stream.stream import TDAStream
 from pymeritrade.history import TDAHistory
 from pymeritrade.options import TDAOptions
 from pymeritrade.quotes import TDAQuotes

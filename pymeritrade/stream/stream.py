@@ -8,29 +8,29 @@ import time
 import json
 
 from pymeritrade.errors import TDAPermissionsError, check_assert
+from pymeritrade.stream.schemas import SUB_ID_TO_NAME, SUB_TYPES
 
 
-SUB_TYPES = {
-    "news": ("NEWS_HEADLINE", "SUBS", "NEWS_HEADLINE-SUBS", [0, 3, 4, 5, 8], {}),
-    "newslist": ("NEWS_HEADLINELIST", "SUBS", "NEWS_HEADLINELIST-SUBS", [0, 1], {}),
-    "forex": ("LEVELONE_FOREX", "SUBS", "LEVELONE_FOREX-SUBS", [0, 1, 2, 3, 4, 5, 6], {}),
-    "quote": ("QUOTE", "SUBS", "QUOTE-SUBS", [0, 1, 2, 3, 8], {}),
-    "chart": (
-        "CHART_type",
-        "SUBS",
-        "CHART_type-SUBS",
-        [0, 1, 2, 3, 4, 5, 6, 7, 8],
-        {"type": {"equity": "EQUITY", "futures": "FUTURES", "options": "OPTIONS"}},
-    ),
-    "actives": (
-        "ACTIVES_exchange",
-        "SUBS",
-        "ACTIVES_exchange-SUBS",
-        [0, 1],
-        {"exchange": {"NASDAQ": "NASDAQ", "NYSE": "NYSE", "OPTIONS": "OPTIONS", "OTCBB": "OTCBB"}},
-    ),
-}
-SUB_ID_TO_NAME = {val[2]: key for key, val in SUB_TYPES.items()}
+class StreamData:
+    def __init__(self, type_name, data):
+        self.name = type_name
+        self.raw = data
+        self.meta = SUB_TYPES[type_name]
+        self.data = {}
+        for raw_item in self.raw:
+            key = raw_item["key"]
+            item_dict = {"seq": raw_item.get("seq")}
+            for i, clean_name in enumerate(self.meta[3]):
+                idx_key = str(i)
+                if idx_key in raw_item:
+                    item_dict[clean_name] = raw_item[idx_key]
+            self.data[key] = item_dict
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __repr__(self):
+        return f"<StreamData ({self.name}) [{','.join(self.data)}]>"
 
 
 class TDAStream:
@@ -153,7 +153,7 @@ class TDAStream:
         check_assert(self.ws_ready, "Websocket not ready")
         check_assert(name in SUB_TYPES)
         check_assert(len(params["symbols"]) > 0, "At least one symbol needed.")
-        service, cmd, id_, default_fields, mods = SUB_TYPES[name]
+        service, cmd, id_, output_names, default_fields, mods = SUB_TYPES[name]
         for mod, translation in mods.items():
             selected = translation.get(params.get(mod))
             check_assert(selected is not None, mod + " not provided")
@@ -174,8 +174,7 @@ class TDAStream:
         def data_iter():
             while True:
                 type_name, items = data_q.get(block=True)
-                item_dict = {val["key"]: val for val in items}
-                yield type_name, item_dict
+                yield StreamData(type_name, items)
 
         return data_iter
 

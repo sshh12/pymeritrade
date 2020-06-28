@@ -10,10 +10,10 @@ class TDAAPIError(TDAError):
     pass
 
 
-class TDUsageError(TDAError):
+class TDAUsageError(TDAError):
     pass
 
 
 def check_assert(val, msg=""):
     if not val:
-        raise TDUsageError(msg)
+        raise TDAUsageError(msg)

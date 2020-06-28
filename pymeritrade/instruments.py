@@ -2,25 +2,18 @@ from pymeritrade.errors import TDAAPIError
 
 
 class TDAInstrument:
-    def __init__(self, client, symbol, cusip, asset_type, exchange, desc=""):
+    def __init__(self, client, json_data):
         self.client = client
-        self.symbol = symbol
-        self.cusip = cusip
-        self.desc = desc
-        self.exhange = exchange
-        self.asset_type = asset_type
+        self.json = json_data
+        self.symbol = self.json["symbol"]
+        self.cusip = self.json["symbol"]
+        self.desc = self.json["description"]
+        self.exhange = self.json["exchange"]
+        self.asset_type = self.json["assetType"]
 
     @staticmethod
     def from_json(client, json_data):
-        symbol = json_data["symbol"]
-        return TDAInstrument(
-            client,
-            symbol,
-            json_data["cusip"],
-            json_data["assetType"],
-            json_data["exchange"],
-            desc=json_data["description"],
-        )
+        return TDAInstrument(client, json_data)
 
     @property
     def quote(self):
@@ -47,17 +40,16 @@ class TDAInstruments:
     def __init__(self, client):
         self.client = client
 
-    def _call_api(self, query, search):
-        resp = self.client._call_api("instruments", params={"symbol": query, "projection": search})
-        return resp
+    def _query_instruments(self, query, search):
+        return self.client._call_api("instruments", params={"symbol": query, "projection": search})
 
     def fundamentals(self, query):
-        return self._call_api(query, "fundamental")[query]["fundamental"]
+        return self._query_instruments(query, "fundamental")[query]["fundamental"]
 
-    def __getitem__(self, key):
-        if key in TDAInstruments.CACHE:
-            return TDAInstruments.CACHE[key]
-        data = self._call_api(key, "symbol-search")
-        if key in data:
-            return TDAInstrument.from_json(self.client, data[key])
-        return None
+    def __getitem__(self, symbol):
+        if symbol in TDAInstruments.CACHE:
+            return TDAInstruments.CACHE[symbol]
+        data = self._query_instruments(symbol, "symbol-search")
+        if symbol in data:
+            return TDAInstrument.from_json(self.client, data[symbol])
+        raise TDAAPIError(f"{symbol} not found.")
