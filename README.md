@@ -8,6 +8,8 @@ $ pip install git+https://github.com/sshh12/pymeritrade.git --upgrade
 
 ## Usage
 
+#### Basic
+
 ```python
 from pymeritrade import TDAClient
 
@@ -28,6 +30,8 @@ print(tda.options(quotes=True)['AAPL'])
 print(tda.quotes()[['AMZN', 'INO']])
 ```
 
+#### Instruments
+
 ```python
 AAPL = tda.stocks['AAPL']
 print(AAPL.quote)
@@ -35,6 +39,8 @@ print(AAPL.fundamentals)
 print(AAPL.history(span='day', freq='minute'))
 print(AAPL.options())
 ```
+
+#### Websocket API
 
 ```python
 stream = tda.create_stream(debug=True)
@@ -48,6 +54,8 @@ stream.subscribe('actives', exchange='NASDAQ', symbols=['NASDAQ-60'])
 for item in stream.live_data():
     print(item)
 ```
+
+#### Price History
 
 ```python
 # Create a history factory (symbol(s) -> Pandas DataFrame)
@@ -79,11 +87,34 @@ daily_history[['AAPL', 'INTC']]
 # 2020-05-08 05:00:00    305.640     310.35  304.2900      310.13  ...    59.7800     59.05       59.67     20391091
 ```
 
+#### Orders
+
 ```python
 print(tda.orders.all())
 ```
 
-## Alternative Python Libs
+#### Trading
+
+`TODO`
+
+#### Automated Authentication
+
+```python
+from pymeritrade.auth import SeleniumHeadlessHandler
+
+class CustomHandler(SeleniumHeadlessHandler):
+
+    def get_login_creds(self):
+        return "myusername", "pa55WORD"
+
+    def get_sms_code(self):
+        return input('2fa code > ')
+
+tda = TDAClient(api_key, auth_handler=CustomHandler)
+tda.load_login()
+```
+
+## Alternative Python Librarys
 
 [@areed1192/td-ameritrade-python-api](https://github.com/areed1192/td-ameritrade-python-api)
 
