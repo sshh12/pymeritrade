@@ -20,7 +20,7 @@ class TDAHistory:
         self.start = kwargs.get("start")
         self.end = kwargs.get("end")
 
-    def _call_api(self, symbol):
+    def _query_history(self, symbol):
         params = dict(periodType=self.span, frequencyType=self.freq, needExtendedHoursData=str(self.extended).lower())
         if self.start is not None:
             params["startDate"] = _date_to_ms(self.start)
@@ -38,10 +38,10 @@ class TDAHistory:
     def __getitem__(self, key):
         df = None
         if type(key) == str:
-            df = self._call_api(key)
+            df = self._query_history(key)
         elif type(key) == list:
             for symbol in key:
-                sym_df = self._call_api(symbol)
+                sym_df = self._query_history(symbol)
                 col_map = {c: symbol + "_" + c for c in sym_df.columns}
                 sym_df = sym_df.rename(columns=col_map)
                 if df is None:

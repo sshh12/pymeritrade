@@ -7,9 +7,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pymeritrade",
-    version="0.1.0",
+    version="0.1.1",
     author="Shrivu Shankar",
-    author_email="shrivu1122@gmail.com",
+    author_email="shrivu1122+pymeritrade@gmail.com",
     description="A Python API for TD Ameritrade.",
     long_description=long_description,
     long_description_content_type="text/markdown",
