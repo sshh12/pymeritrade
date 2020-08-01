@@ -100,6 +100,10 @@ class SeleniumHandler(DefaultAuthHandler):
         self._type_field("smscode0", self.get_sms_code())
         self._accept()
         self.wait_a_little()
+        trust_xpath = '//label[@for="trustthisdevice0_0"]'
+        self.driver.find_element(By.XPATH, trust_xpath).click()
+        self._accept()
+        self.wait_a_little()
         self._accept()
         self.wait_a_little()
         code = unquote_plus(self.driver.current_url.split("?code=")[1])
