@@ -117,13 +117,58 @@ class SeleniumHandler(DefaultAuthHandler):
         elem = self.driver.find_element_by_id(elem_id)
         elem.send_keys(text)
 
+    def _click_xpath(self, xpath):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(expected_conditions.element_to_be_clickable((By.XPATH, xpath)))
+        self.driver.find_element_by_xpath(xpath).click()
+
     def _accept(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "accept")))
         self.driver.find_element_by_id("accept").click()
 
 
+class SeleniumQuestionHandler(SeleniumHandler):
+    def answer_question(self, question):
+        return "answer"
+
+    def get_code_from_auth_url(self, auth_url):
+        self.driver = self.get_driver()
+        self.driver.get(auth_url)
+        username, password = self.get_login_creds()
+        self._type_field("username0", username)
+        self._type_field("password", password)
+        self._accept()
+        self.wait_a_little()
+        self._click_xpath("/html/body/form/main/details/summary")
+        self.wait_a_little()
+        self._click_xpath("/html/body/form/main/details/div[4]/div/input")
+        self.wait_a_little()
+        question = self.driver.find_element_by_xpath("/html/body/form/main/div[2]/p[2]").get_attribute("innerText")
+        ans = self.answer_question(question)
+        self._type_field("secretquestion0", ans)
+        self.wait_a_little()
+        self._accept()
+        self.wait_a_little()
+        self._click_xpath("/html/body/form/main/fieldset/div/div[1]/label")
+        self._accept()
+        self.wait_a_little()
+        self._accept()
+        self.wait_a_little()
+        code = unquote_plus(self.driver.current_url.split("?code=")[1])
+        self.driver.quit()
+        return code
+
+
 class SeleniumHeadlessHandler(SeleniumHandler):
+    def get_driver(self):
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--window-size=1920x1080")
+        return webdriver.Chrome(chrome_options=chrome_options)
+
+
+class SeleniumHeadlessQuestionHandler(SeleniumQuestionHandler):
     def get_driver(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless")
