@@ -98,6 +98,7 @@ class SeleniumHandler(DefaultAuthHandler):
         self.driver.find_element(By.XPATH, phone_xpath).click()
         self._accept()
         self._type_field("smscode0", self.get_sms_code())
+        time.sleep(3)
         self._accept()
         self.wait_a_little()
         trust_xpath = '//label[@for="trustthisdevice0_0"]'
