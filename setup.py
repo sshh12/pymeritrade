@@ -11,7 +11,7 @@ with open("requirements.txt") as f:
 
 setuptools.setup(
     name="pymeritrade",
-    version="0.1.3",
+    version="0.1.4",
     author="Shrivu Shankar",
     author_email="shrivu1122+pymeritrade@gmail.com",
     description="A Python API for TD Ameritrade.",
